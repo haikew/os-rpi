@@ -25,6 +25,13 @@ on:
           LeonardPertsch/ImSwitch).
         required: false
         default: ""
+      firmware_update:
+        description: >
+          Sync every board to the firmware server's version before the tests.
+          "off" skips the sync; the boards keep whatever firmware they run.
+        type: choice
+        options: ["on", "off"]
+        default: "on"
   # PRs with the "hardware-test" label: runs when the label is added and on
   # every push to the PR while it is set.
   pull_request:
@@ -109,6 +116,7 @@ jobs:
           MODE: ${{ steps.config.outputs.mode }}
           TARGET: ${{ steps.config.outputs.target }}
           TESTS: ${{ steps.config.outputs.tests }}
+          FIRMWARE_UPDATE: ${{ inputs.firmware_update || 'on' }}
         run: |
           ci/hil-run.sh \
             "--$MODE" "$TARGET" \
