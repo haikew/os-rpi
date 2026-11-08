@@ -65,9 +65,10 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: ${{ env.SUITE_REPO }}
-          # Empty takes that repository's default branch, and so does every PR
-          # run: inputs only exist for a manual run.
-          ref: ${{ inputs.suite_ref }}
+          # inputs only exist for a manual run, so a PR run (and a manual run
+          # with suite_ref left empty) takes test_hil-runner: the default
+          # branch of openUC2/ImSwitch has no HIL suite yet.
+          ref: ${{ inputs.suite_ref || 'test_hil-runner' }}
           path: ImSwitch
 
       - name: Determine what to test
@@ -116,7 +117,8 @@ jobs:
           MODE: ${{ steps.config.outputs.mode }}
           TARGET: ${{ steps.config.outputs.target }}
           TESTS: ${{ steps.config.outputs.tests }}
-          FIRMWARE_UPDATE: ${{ inputs.firmware_update || 'on' }}
+          # A PR run has no inputs: it skips the firmware sync.
+          FIRMWARE_UPDATE: ${{ inputs.firmware_update || 'off' }}
         run: |
           ci/hil-run.sh \
             "--$MODE" "$TARGET" \
