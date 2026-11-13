@@ -18,7 +18,7 @@ fi
 
 # restore.sh goes back to the stage which is applied now. A stage which is staged but not yet
 # applied would be lost by that, so we stop here instead.
-current_stage="$(forklift stage show-hist | grep -E '^[0-9]+ \([^)]*current' | cut -d ' ' -f 1)"
+current_stage="$(forklift stage show-hist | grep -m 1 -E '^[0-9]+ \([^)]*current' | cut -d ' ' -f 1)"
 next_stage="$(forklift stage show-next-index)"
 if [ "$current_stage" != "$next_stage" ]; then
   echo "Error: stage $next_stage is staged but not applied (applied: $current_stage)!"
