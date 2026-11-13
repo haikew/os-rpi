@@ -14,8 +14,8 @@ on:
         default: ""
       tests:
         description: >
-          Space-separated test folders (e.g. "board firmware"). Empty runs every test, which moves
-          the stage and switches light.
+          Space-separated tests (e.g. "board_link firmware_server"). Empty runs every test, which
+          moves the stage and switches light.
         required: false
         default: ""
       sync_firmware:
@@ -92,7 +92,7 @@ jobs:
           SYNC_FIRMWARE: ${{ inputs.sync_firmware && '--sync-firmware' || '' }}
         run: |
           docker exec "$CONTAINER" \
-            python3 -m imswitch.imcontrol._test.e2e "$CONTAINER_REPORT" $TESTS $SYNC_FIRMWARE
+            python3 -m imswitch.imcontrol._test.hil "$CONTAINER_REPORT" $TESTS $SYNC_FIRMWARE
 
       - name: Copy the report out of the container
         if: always()

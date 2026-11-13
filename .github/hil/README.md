@@ -6,7 +6,7 @@ Actions runner on the microscope's Raspberry Pi:
 
 1. `swap-in.sh` puts the image or pallet to test onto the machine.
 2. The hardware tests run inside the ImSwitch container. They are part of ImSwitch
-   ([`imswitch/imcontrol/_test/e2e`](https://github.com/openUC2/ImSwitch/tree/master/imswitch/imcontrol/_test/e2e)),
+   ([`imswitch/imcontrol/_test/hil`](https://github.com/openUC2/ImSwitch/tree/master/imswitch/imcontrol/_test/hil)),
    so they always fit the ImSwitch version under test.
 3. `restore.sh` puts the machine back, whether the tests passed, failed or were cancelled.
 
@@ -34,7 +34,7 @@ tested.
 ```
 
 ```bash
-docker exec imswitch-server-1 python3 -m imswitch.imcontrol._test.e2e /tmp/report board camera
+docker exec imswitch-server-1 python3 -m imswitch.imcontrol._test.hil /tmp/report board_link camera_capture
 docker cp imswitch-server-1:/tmp/report/. report
 ```
 
@@ -42,8 +42,8 @@ docker cp imswitch-server-1:/tmp/report/. report
 .github/hil/restore.sh
 ```
 
-To test what the machine already runs, skip `swap-in.sh` and `restore.sh`. Leave out the folder
-names (`board camera`) to run every test; add `--sync-firmware` to flash every board to the
+To test what the machine already runs, skip `swap-in.sh` and `restore.sh`. Leave out the test
+names (`board_link camera_capture`) to run every test; add `--sync-firmware` to flash every board to the
 firmware server's version first.
 
 ## How the swap works
