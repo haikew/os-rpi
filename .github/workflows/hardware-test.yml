@@ -38,7 +38,7 @@ permissions:
 
 env:
   CONTAINER: imswitch-server-1
-  CONTAINER_REPORT: /tmp/hil-report-${{ github.run_id }}
+  CONTAINER_REPORT: /tmp/hil-report-${{ github.run_id }}-${{ github.run_attempt }}
 
 jobs:
   hardware-test:
@@ -89,29 +89,42 @@ jobs:
       - name: Run the hardware tests
         env:
           TESTS: ${{ inputs.tests }}
+          HIL_TARGET: ${{ steps.target.outputs.target }}
+          HIL_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           SYNC_FIRMWARE: ${{ inputs.sync_firmware && '--sync-firmware' || '' }}
         run: |
-          docker exec "$CONTAINER" \
+          docker exec -e HIL_TARGET -e HIL_RUN_URL "$CONTAINER" \
             python3 -m imswitch.imcontrol._test.hil "$CONTAINER_REPORT" $TESTS $SYNC_FIRMWARE
 
       - name: Copy the report out of the container
         if: always()
         run: |
-          docker cp "$CONTAINER:$CONTAINER_REPORT/." "$RUNNER_TEMP/hil-report"
-          cat "$RUNNER_TEMP/hil-report/summary.md" >> $GITHUB_STEP_SUMMARY
+          docker cp "$CONTAINER:$CONTAINER_REPORT/." "$RUNNER_TEMP/hil-report-${{ github.run_id }}-${{ github.run_attempt }}"
+          cat "$RUNNER_TEMP/hil-report-${{ github.run_id }}-${{ github.run_attempt }}/summary.md" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload the report
+        if: always()
+        timeout-minutes: 3
+        uses: actions/upload-artifact@v7
+        with:
+          name: hil-report
+          path: ${{ runner.temp }}/hil-report-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Upload the combined PDF
+        if: always()
+        timeout-minutes: 3
+        uses: actions/upload-artifact@v7
+        with:
+          name: hil-report-pdf
+          path: ${{ runner.temp }}/hil-report-${{ github.run_id }}-${{ github.run_attempt }}/hil-report.pdf
+          if-no-files-found: warn
+          retention-days: 30
 
       - name: Restore the machine
         if: always()
         run: .github/hil/restore.sh
-
-      - name: Upload the report
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: hil-report
-          path: ${{ runner.temp }}/hil-report
-          if-no-files-found: warn
-          retention-days: 30
 
       - name: Remove the label
         if: always() && github.event_name == 'pull_request'

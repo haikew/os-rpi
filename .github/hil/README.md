@@ -20,8 +20,15 @@ Actions runner on the microscope's Raspberry Pi:
 - **Only an ImSwitch image:** run the workflow by hand from the *Actions* tab and enter the image's
   tag (e.g. `sha-7d3adda`) as `image`. The machine keeps the pallet it runs.
 
-The report (`report.html` with photos, `junit.xml`) is attached to the run as the artifact
-`hil-report`, and a summary is shown on the run's page.
+The artifact `hil-report-pdf` contains `hil-report.pdf`: test results and photos followed by
+this run's original FRAME calibration PDF. The complete `hil-report` artifact also includes
+HTML, JUnit, the original calibration PDF and the pre-calibration setup backup. A summary is
+shown on the run's page. Both uploads have a three-minute timeout and run before deployment
+restoration; restoration is still attempted if an upload fails.
+
+Calibration is attempted last even after preceding tests fail. New calibration results are
+retained in ImSwitchConfig: restoring the deployment does not restore the setup. A calibration
+that fails may have written partial changes. The backup permits manual recovery.
 
 A pallet's files in `/etc` and `/usr` only take effect after a reboot, so only its containers are
 tested.
